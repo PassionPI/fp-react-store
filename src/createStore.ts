@@ -84,8 +84,8 @@ export function createStore<
     const subs: SubMap = useMemo(() => new Map(), []);
     const keys: SubSet = useMemo(() => new Set(), []);
 
-    const storeHooks = useHooks();
-    const store = useMemo(() => assign(state(), storeHooks), []);
+    const value = useHooks();
+    const store = useMemo(() => assign(state(), value), []);
 
     const setValue = (value: Partial<Value>) => {
       for (const [p, v] of entries(value)) {
@@ -104,8 +104,8 @@ export function createStore<
     };
 
     useEffect(() => {
-      setValue(storeHooks);
-    }, [storeHooks]);
+      setValue(value);
+    }, [value]);
 
     const sub: CtxValue["sub"] = useFn((fn, keysGet) => {
       keysGet.forEach((key) => {
@@ -154,9 +154,9 @@ export function createStore<
       changed?: (prev: R, next: R) => boolean
     ) {
       const { sub, unsub, getStore } = useContext(CTX).current;
-      const keySet = useMemo(() => new Set<EmptyFnKey>(), []);
+      const keys = useMemo(() => new Set<EmptyFnKey>(), []);
       const [value, setValue] = useState(() =>
-        selector(getKeys(keySet, getStore()))
+        selector(getKeys(keys, getStore()))
       );
       useEffect(() => {
         const update = () => {
@@ -165,9 +165,9 @@ export function createStore<
             return changed ? (changed(prev, next) ? next : prev) : next;
           });
         };
-        sub(update, keySet);
+        sub(update, keys);
         return () => {
-          unsub(update, keySet);
+          unsub(update, keys);
         };
       }, []);
       return value;
